@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Budget-Naz</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{--bg:#1a1a2e;--card:#16213e;--highlight:#e94560;--text:#e0e0e0;--border:#2a2a4a}
+[data-theme="light"]{--bg:#f0f0f5;--card:#fff;--highlight:#e94560;--text:#1a1a2e;--border:#ddd}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1rem}
+.container{max-width:1200px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;margin-bottom:1.5rem}
+header h1{font-size:1.8rem;color:var(--highlight)}
+.toggle-btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;overflow:visible}
+.card h2{margin-bottom:1rem;font-size:1.2rem}
+.capital-display{font-size:2.5rem;font-weight:700;color:var(--highlight);margin:.5rem 0}
+.btn{background:var(--highlight);color:#fff;border:none;padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn-sm{padding:.4rem .8rem;font-size:.8rem}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--highlight);color:var(--highlight)}
+.inline-form{display:none;gap:.5rem;align-items:center;margin-top:1rem;flex-wrap:wrap}
+.inline-form.active{display:flex}
+input,select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem;border-radius:8px;font-size:.9rem;font-family:inherit;transition:border .2s,box-shadow .2s}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:2.5rem}
+input:focus,select:focus{outline:none;border-color:var(--highlight);box-shadow:0 0 0 3px rgba(233,69,96,.15)}
+input[type="date"]{appearance:none;-webkit-appearance:none;padding:.6rem .8rem;cursor:pointer}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.8);cursor:pointer;padding:4px;border-radius:4px;transition:background .2s}
+input[type="date"]::-webkit-calendar-picker-indicator:hover{background:rgba(233,69,96,.2)}
+.date-picker-wrap{position:relative;display:inline-block;width:100%}
+.date-picker-wrap input{cursor:pointer}
+.date-picker-wrap::after{content:'📅';position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.85rem;opacity:.7}
+.cal-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;z-index:9000;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:0 8px 30px rgba(0,0,0,.4);min-width:280px}
+.cal-popup.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
+.cal-header button{background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .2s}
+.cal-header button:hover{background:var(--border)}
+.cal-header span{font-weight:600;font-size:.9rem}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-grid .day-label{font-size:.7rem;opacity:.5;padding:4px}
+.cal-grid .day{padding:8px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:background .15s,color .15s}
+.cal-grid .day:hover{background:var(--highlight);color:#fff}
+.cal-grid .day.today{border:1px solid var(--highlight)}
+.cal-grid .day.selected{background:var(--highlight);color:#fff}
+.cal-grid .day.other-month{opacity:.3}
+tr{transition:opacity .3s,transform .3s}
+tr.deleting{opacity:0;transform:translateX(-20px)}
+.audit-log{display:none;margin-top:1rem;max-height:200px;overflow-y:auto;font-size:.85rem}
+.audit-log.active{display:block}
+.audit-log li{padding:.4rem 0;border-bottom:1px solid var(--border);list-style:none}
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;overflow:hidden}
+.summary-card .icon{font-size:1.3rem;margin-bottom:.2rem}
+.summary-card .label{font-size:.7rem;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+.summary-card .value{font-size:.95rem;font-weight:700;margin-top:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;align-items:end;overflow:visible}
+.form-group{display:flex;flex-direction:column;gap:.3rem;position:relative}
+.form-group label{font-size:.8rem;opacity:.7}
+.table-controls{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{padding:.7rem .5rem;text-align:left;border-bottom:1px solid var(--border)}
+th{opacity:.7;font-weight:600;font-size:.75rem;text-transform:uppercase}
+tfoot td{font-weight:700;border-top:2px solid var(--border)}
+.text-green{color:#4caf50}
+.text-red{color:#e94560}
+.text-gray{color:#888}
+.actions button{margin-right:.3rem}
+.toast-container{position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--card);border:1px solid var(--border);padding:1rem 1.5rem;border-radius:8px;font-size:.9rem;animation:slideIn .3s ease;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.toast.success{border-left:4px solid #4caf50}
+.toast.error{border-left:4px solid #e94560}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@media(max-width:600px){.capital-display{font-size:1.8rem}header h1{font-size:1.3rem}.form-grid{grid-template-columns:1fr}.summary-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>💰 Budget-Naz</h1>
+    <button class="toggle-btn" onclick="toggleTheme()">🌙 Toggle Theme</button>
+  </header>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <small style="opacity:.7">Current Capital</small>
+        <div class="capital-display" id="capitalDisplay">₱0.00</div>
+      </div>
+      <button class="btn" onclick="document.getElementById('capitalForm').classList.toggle('active')">Set Capital</button>
+    </div>
+    <div class="inline-form" id="capitalForm">
+      <input type="text" inputmode="decimal" id="capitalAmount" placeholder="Amount">
+      <input type="text" id="capitalReason" placeholder="Reason">
+      <button class="btn btn-sm" onclick="setCapital()">Save</button>
+    </div>
+    <a href="#" style="font-size:.8rem;opacity:.7;display:inline-block;margin-top:.8rem" onclick="toggleAudit(event)">View Audit Log</a>
+    <ul class="audit-log" id="auditLog"></ul>
+  </div>
+
+  <div class="summary-row" id="summaryRow">
+    <div class="summary-card"><div class="icon">🏦</div><div class="label">Capital Repaid</div><div class="value" id="sumCapital">₱0.00</div></div>
+    <div class="summary-card"><div class="icon">📈</div><div class="label">Total Profit</div><div class="value" id="sumProfit">₱0.00</div></div>
+    <div class="summary-card"><div class="icon">⛪</div><div class="label">Total Tithes</div><div class="value" id="sumTithes">₱0.00</div></div>
+    <div class="summary-card"><div class="icon">💵</div><div class="label">Total Income</div><div class="value" id="sumIncome">₱0.00</div></div>
+    <div class="summary-card"><div class="icon">✨</div><div class="label">Total Clean</div><div class="value" id="sumClean">₱0.00</div></div>
+  </div>
+
+  <div class="card">
+    <h2>📝 Add Daily Income</h2>
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><div class="date-picker-wrap"><input type="text" id="incDate" readonly onclick="openCal('incDate')"><div class="cal-popup" id="cal-incDate"></div></div></div>
+      <div class="form-group"><label>Income *</label><input type="text" inputmode="decimal" id="incAmount" required placeholder="0.00" pattern="[0-9]*\.?[0-9]*"></div>
+      <div class="form-group"><label>Payment</label><select id="incPayment"><option>Cash</option><option>GCash</option><option>Bank Transfer</option><option>Other</option></select></div>
+      <div class="form-group"><label>Note</label><input type="text" id="incNote" placeholder="Optional"></div>
+      <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="addIncome()">Add Income</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+      <h2>📊 Budget Breakdown</h2>
+      <div class="table-controls">
+        <select id="monthFilter" onchange="loadComputed()"><option value="">All Months</option></select>
+        <button class="btn btn-sm btn-outline" onclick="exportCSV()">📥 CSV</button>
+        <button class="btn btn-sm btn-outline" onclick="exportPDF()">📄 PDF</button>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>#</th><th>Date</th><th>Income</th><th>Payment</th><th>Capital Repaid</th><th>Remaining Capital</th><th>Profit</th><th>Tithes (10%)</th><th>Clean</th><th>Note</th><th>Actions</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+        <tfoot id="tableFoot"><tr><td colspan="10">No data</td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Edit Modal -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;display:none;align-items:center;justify-content:center">
+  <div class="card" style="width:90%;max-width:400px">
+    <h2>Edit Entry</h2>
+    <input type="hidden" id="editId">
+    <div class="form-group" style="margin-top:1rem"><label>Date</label><div class="date-picker-wrap"><input type="text" id="editDate" readonly onclick="openCal('editDate')"><div class="cal-popup" id="cal-editDate"></div></div></div>
+    <div class="form-group" style="margin-top:.5rem"><label>Income</label><input type="text" inputmode="decimal" id="editAmount" placeholder="0.00"></div>
+    <div class="form-group" style="margin-top:.5rem"><label>Payment</label><select id="editPayment"><option>Cash</option><option>GCash</option><option>Bank Transfer</option><option>Other</option></select></div>
+    <div class="form-group" style="margin-top:.5rem"><label>Note</label><input type="text" id="editNote"></div>
+    <div style="margin-top:1rem;display:flex;gap:.5rem">
+      <button class="btn" onclick="saveEdit()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const fmt=n=>'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today=()=>new Date().toISOString().split('T')[0];
+const fmtDate=d=>{const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'}).replace(',',',');}
+
+// Custom Calendar Picker
+const calState={};
+
+document.getElementById('incDate').value=fmtDate(today());
+calState['incDate']=today();
+function openCal(inputId){
+  document.querySelectorAll('.cal-popup.active').forEach(el=>el.classList.remove('active'));
+  const popup=document.getElementById('cal-'+inputId);
+  const val=calState[inputId]||today();
+  const d=new Date(val+'T00:00:00');
+  calState[inputId+'_month']=d.getMonth();
+  calState[inputId+'_year']=d.getFullYear();
+  renderCal(inputId);
+  popup.classList.add('active');
+}
+function renderCal(inputId){
+  const popup=document.getElementById('cal-'+inputId);
+  const month=calState[inputId+'_month'];
+  const year=calState[inputId+'_year'];
+  const sel=calState[inputId]||today();
+  const todayStr=today();
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let html=`<div class="cal-header"><button onclick="navCal('${inputId}',-1)">‹</button><span>${monthNames[month]} ${year}</span><button onclick="navCal('${inputId}',1)">›</button></div>`;
+  html+=`<div class="cal-grid">`;
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{html+=`<div class="day-label">${d}</div>`});
+  for(let i=0;i<firstDay;i++){const prev=new Date(year,month,0-firstDay+i+1).getDate();html+=`<div class="day other-month">${prev}</div>`}
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cls=['day'];
+    if(ds===todayStr)cls.push('today');
+    if(ds===sel)cls.push('selected');
+    html+=`<div class="${cls.join(' ')}" onclick="pickDate('${inputId}','${ds}')">${d}</div>`;
+  }
+  html+=`</div>`;
+  popup.innerHTML=html;
+}
+function navCal(inputId,dir){
+  calState[inputId+'_month']+=dir;
+  if(calState[inputId+'_month']>11){calState[inputId+'_month']=0;calState[inputId+'_year']++}
+  if(calState[inputId+'_month']<0){calState[inputId+'_month']=11;calState[inputId+'_year']--}
+  renderCal(inputId);
+}
+function pickDate(inputId,dateStr){
+  calState[inputId]=dateStr;
+  document.getElementById(inputId).value=fmtDate(dateStr);
+  document.getElementById('cal-'+inputId).classList.remove('active');
+}
+function getDateVal(inputId){return calState[inputId]||today();}
+document.addEventListener('click',e=>{if(!e.target.closest('.date-picker-wrap'))document.querySelectorAll('.cal-popup.active').forEach(el=>el.classList.remove('active'))});
+
+let computedData=[];
+
+function toggleTheme(){
+  const t=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=t;
+}
+
+function toast(msg,type='success'){
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.textContent=msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+async function api(url,opts={}){
+  try{
+    const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opts});
+    if(!r.ok)throw new Error((await r.json()).detail||r.statusText);
+    return r.json();
+  }catch(e){toast(e.message,'error');throw e;}
+}
+
+async function loadCapital(){
+  const d=await api('/api/budget/capital');
+  document.getElementById('capitalDisplay').textContent=fmt(d.amount);
+}
+
+async function setCapital(){
+  const amount=parseFloat(document.getElementById('capitalAmount').value);
+  const reason=document.getElementById('capitalReason').value;
+  if(!amount){toast('Enter amount','error');return;}
+  await api('/api/budget/capital',{method:'PUT',body:JSON.stringify({amount,reason})});
+  toast('Capital updated');
+  document.getElementById('capitalForm').classList.remove('active');
+  document.getElementById('capitalAmount').value='';
+  document.getElementById('capitalReason').value='';
+  loadAll();
+}
+
+async function toggleAudit(e){
+  e.preventDefault();
+  const el=document.getElementById('auditLog');
+  if(el.classList.contains('active')){el.classList.remove('active');return;}
+  const d=await api('/api/budget/audit');
+  el.innerHTML=(d||[]).map(a=>{
+    const dt=new Date(a.changed_at.endsWith('Z')?a.changed_at:a.changed_at+'Z');
+    const dateStr=dt.toLocaleDateString('en-PH',{month:'short',day:'2-digit',year:'numeric',timeZone:'Asia/Manila'})+' '+dt.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Manila'});
+    return`<li>${fmt(a.old_amount)} → <strong>${fmt(a.new_amount)}</strong> — ${a.reason||'N/A'} <small>(${dateStr})</small></li>`;
+  }).join('');
+  el.classList.add('active');
+}
+
+async function loadSummary(){
+  const d=await api('/api/budget/summary');
+  const remEl=document.getElementById('sumCapital');
+  remEl.textContent=fmt(d.total_capital_repaid)+'/'+fmt(d.capital);
+  remEl.style.color=d.total_capital_repaid>=d.capital&&d.capital>0?'#4caf50':'#e94560';
+  document.getElementById('sumIncome').textContent=fmt(d.total_income);
+  document.getElementById('sumProfit').textContent=fmt(d.total_profit);
+  document.getElementById('sumTithes').textContent=fmt(d.total_tithes);
+  document.getElementById('sumClean').textContent=fmt(d.total_clean);
+}
+
+async function addIncome(){
+  const date=getDateVal('incDate');
+  const income=parseFloat(document.getElementById('incAmount').value);
+  const note=document.getElementById('incNote').value;
+  if(!income){toast('Enter income amount','error');return;}
+  await api('/api/budget/income',{method:'POST',body:JSON.stringify({date,income,payment_method:document.getElementById('incPayment').value,note})});
+  toast('Income added');
+  document.getElementById('incAmount').value='';
+  document.getElementById('incNote').value='';
+  calState['incDate']=today();document.getElementById('incDate').value=fmtDate(today());
+  loadAll();
+}
+
+async function loadComputed(){
+  const month=document.getElementById('monthFilter').value;
+  const url='/api/budget/computed'+(month?'?month='+month:'');
+  const d=await api(url);
+  computedData=d||[];
+  const tbody=document.getElementById('tableBody');
+  if(!computedData.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;opacity:.5">No entries yet</td></tr>';document.getElementById('tableFoot').innerHTML='';return;}
+  let totInc=0,totRep=0,totProf=0,totTith=0,totClean=0;
+  tbody.innerHTML=computedData.map((r,i)=>{
+    totInc+=r.income;totRep+=r.capital_repaid;totProf+=r.profit;totTith+=r.tithes;totClean+=r.clean;
+    const profClass=r.profit>0?'text-green':'text-gray';
+    const capClass=r.remaining_capital>0?'text-red':'text-green';
+    return`<tr data-id="${r.id}">
+      <td>${i+1}</td><td>${fmtDate(r.date)}</td><td>${fmt(r.income)}</td><td>${r.payment_method||'Cash'}</td><td>${fmt(r.capital_repaid)}</td>
+      <td class="${capClass}">${fmt(r.remaining_capital)}</td><td class="${profClass}">${fmt(r.profit)}</td>
+      <td>${fmt(r.tithes)}</td><td>${fmt(r.clean)}</td><td>${r.note||''}</td>
+      <td class="actions"><button class="btn btn-sm btn-outline" onclick="openEdit('${r.id}','${r.date}',${r.income},'${(r.payment_method||'Cash').replace(/'/g,"\\'")}','${(r.note||'').replace(/'/g,"\\'")}')">✏️</button><button class="btn btn-sm btn-outline" onclick="deleteEntry('${r.id}')">🗑️</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableFoot').innerHTML=`<tr><td></td><td>Totals</td><td>${fmt(totInc)}</td><td></td><td>${fmt(totRep)}</td><td></td><td>${fmt(totProf)}</td><td>${fmt(totTith)}</td><td>${fmt(totClean)}</td><td></td><td></td></tr>`;
+}
+
+function populateMonthFilter(){
+  const sel=document.getElementById('monthFilter');
+  const now=new Date();
+  for(let i=0;i<12;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const val=d.toISOString().slice(0,7);
+    const label=d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    sel.innerHTML+=`<option value="${val}">${label}</option>`;
+  }
+}
+
+function openEdit(id,date,income,payment,note){
+  document.getElementById('editId').value=id;
+  calState['editDate']=date;
+  document.getElementById('editDate').value=fmtDate(date);
+  document.getElementById('editAmount').value=income;
+  document.getElementById('editPayment').value=payment;
+  document.getElementById('editNote').value=note;
+  document.getElementById('editModal').style.display='flex';
+}
+function closeModal(){document.getElementById('editModal').style.display='none';}
+
+async function saveEdit(){
+  const id=document.getElementById('editId').value;
+  const date=getDateVal('editDate');
+  const income=parseFloat(document.getElementById('editAmount').value);
+  const note=document.getElementById('editNote').value;
+  await api(`/api/budget/income/${id}`,{method:'PUT',body:JSON.stringify({date,income,payment_method:document.getElementById('editPayment').value,note})});
+  toast('Entry updated');
+  closeModal();
+  loadAll();
+}
+
+async function deleteEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  const row=document.querySelector(`tr[data-id="${id}"]`);
+  if(row){row.classList.add('deleting');await new Promise(r=>setTimeout(r,300));}
+  await api(`/api/budget/income/${id}`,{method:'DELETE'});
+  toast('Entry deleted');
+  loadAll();
+}
+
+function exportCSV(){
+  if(!computedData.length){toast('No data to export','error');return;}
+  const headers=['#','Date','Income','Payment','Capital Repaid','Remaining Capital','Profit','Tithes','Clean','Note'];
+  const rows=computedData.map((r,i)=>[i+1,r.date,r.income,r.payment_method||'Cash',r.capital_repaid,r.remaining_capital,r.profit,r.tithes,r.clean,`"${(r.note||'').replace(/"/g,'""')}"`]);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='budget-naz-export.csv';
+  a.click();
+}
+
+function exportPDF(){
+  if(!computedData.length){toast('No data to export','error');return;}
+  const w=window.open('','_blank');
+  const rows=computedData.map((r,i)=>`<tr><td>${i+1}</td><td>${fmtDate(r.date)}</td><td>${fmt(r.income)}</td><td>${r.payment_method||'Cash'}</td><td>${fmt(r.capital_repaid)}</td><td>${fmt(r.remaining_capital)}</td><td style="color:${r.profit>0?'#2e7d32':'#666'}">${fmt(r.profit)}</td><td>${fmt(r.tithes)}</td><td style="font-weight:600">${fmt(r.clean)}</td><td>${r.note||''}</td></tr>`).join('');
+  let totInc=0,totRep=0,totProf=0,totTith=0,totClean=0;
+  computedData.forEach(r=>{totInc+=r.income;totRep+=r.capital_repaid;totProf+=r.profit;totTith+=r.tithes;totClean+=r.clean});
+  const capEl=document.getElementById('sumCapital');
+  const capText=capEl?capEl.textContent:'';
+  w.document.write(`<!DOCTYPE html><html><head><title>Budget-Naz — Financial Report</title><style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',Arial,sans-serif;padding:3rem;color:#1a1a2e;line-height:1.6;max-width:1100px;margin:0 auto}
+    .header{border-bottom:3px solid #e94560;padding-bottom:1.5rem;margin-bottom:2rem;display:flex;justify-content:space-between;align-items:flex-end}
+    .header h1{font-size:1.8rem;color:#1a1a2e;letter-spacing:-.5px}
+    .header .subtitle{font-size:.85rem;color:#666;margin-top:.3rem}
+    .header .date-info{text-align:right;font-size:.8rem;color:#666}
+    .summary-section{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:2rem;padding:1.5rem;background:#f8f9fa;border-radius:8px;border:1px solid #eee}
+    .summary-item{text-align:center}
+    .summary-item .label{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:.3rem}
+    .summary-item .value{font-size:1.1rem;font-weight:700;color:#1a1a2e}
+    .summary-item .value.green{color:#2e7d32}
+    .summary-item .value.red{color:#e94560}
+    table{width:100%;border-collapse:collapse;font-size:.78rem;margin-bottom:1.5rem}
+    th{background:#1a1a2e;color:#fff;padding:10px 8px;text-align:right;font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.3px}
+    th:first-child,th:nth-child(2),th:nth-child(4),th:last-child{text-align:left}
+    td{padding:9px 8px;text-align:right;border-bottom:1px solid #eee}
+    td:first-child,td:nth-child(2),td:nth-child(4),td:last-child{text-align:left}
+    tr:nth-child(even){background:#fafafa}
+    tr:hover{background:#f0f0f5}
+    tfoot td{font-weight:700;background:#f0f0f5;border-top:2px solid #1a1a2e;padding:12px 8px}
+    .footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #ddd;display:flex;justify-content:space-between;font-size:.75rem;color:#999}
+    .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:500}
+    .badge-green{background:#e8f5e9;color:#2e7d32}
+    .badge-red{background:#fce4ec;color:#c62828}
+    .print-btn{background:#e94560;color:#fff;border:none;padding:.8rem 2rem;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;margin-top:1.5rem}
+    .print-btn:hover{opacity:.9}
+    @media print{.print-btn{display:none}.no-print{display:none}body{padding:1cm;font-size:9pt}
+    .header{border-bottom-width:2px;padding-bottom:1rem;margin-bottom:1.5rem}
+    .header h1{font-size:16pt}
+    .summary-section{background:#f8f9fa!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:1rem;margin-bottom:1.5rem}
+    .summary-item .value{font-size:10pt}
+    table{page-break-inside:auto;font-size:7.5pt}
+    tr{page-break-inside:avoid}
+    th{background:#1a1a2e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:8px 6px}
+    td{padding:7px 6px}
+    tr:nth-child(even){background:#f5f5f5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    tfoot td{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .footer{position:fixed;bottom:0;left:0;right:0;padding:1rem 3rem;border-top:1px solid #ccc}
+    @page{size:landscape;margin:1.2cm}}
+  </style></head><body>
+  <div class="header">
+    <div><h1>Budget-Naz</h1><div class="subtitle">Financial Summary Report</div></div>
+    <div class="date-info">
+      <div><strong>Report Date:</strong> ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+      <div><strong>Entries:</strong> ${computedData.length} transactions</div>
+    </div>
+  </div>
+  <div class="summary-section">
+    <div class="summary-item"><div class="label">Capital Repaid</div><div class="value">${capText}</div></div>
+    <div class="summary-item"><div class="label">Total Income</div><div class="value">${fmt(totInc)}</div></div>
+    <div class="summary-item"><div class="label">Total Profit</div><div class="value green">${fmt(totProf)}</div></div>
+    <div class="summary-item"><div class="label">Total Tithes (10%)</div><div class="value">${fmt(totTith)}</div></div>
+    <div class="summary-item"><div class="label">Total Clean</div><div class="value green">${fmt(totClean)}</div></div>
+  </div>
+  <table><thead><tr><th>#</th><th>Date</th><th>Income</th><th>Payment</th><th>Capital Repaid</th><th>Remaining</th><th>Profit</th><th>Tithes</th><th>Clean</th><th>Note</th></tr></thead>
+  <tbody>${rows}</tbody>
+  <tfoot><tr><td></td><td><strong>TOTALS</strong></td><td>${fmt(totInc)}</td><td></td><td>${fmt(totRep)}</td><td></td><td>${fmt(totProf)}</td><td>${fmt(totTith)}</td><td>${fmt(totClean)}</td><td></td></tr></tfoot>
+  </table>
+  <div class="footer"><div>Budget-Naz • Personal Finance Tracker</div><div>Page 1 of 1</div></div>
+  <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  </body></html>`);
+  w.document.close();
+}
+
+function loadAll(){loadCapital();loadSummary();loadComputed();}
+populateMonthFilter();
+document.querySelectorAll('#incAmount,#incNote').forEach(el=>{el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addIncome()}})});
+loadAll();
+</script>
+</body>
+</html>
